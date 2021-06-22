@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
 import { Typography } from '@material-ui/core';
+import keytar from 'keytar';
 import { version } from '../constants/misc';
 
 const Version = () => (
