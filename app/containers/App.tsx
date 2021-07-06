@@ -1,11 +1,20 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
 import { Typography } from '@material-ui/core';
 import keytar from 'keytar';
+import { ipcRenderer } from 'electron';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import PropTypes from 'prop-types';
 import { version } from '../constants/misc';
 
-const Version = () => (
+const Version = ({ ver }) => (
   <Typography
     style={{
       position: 'absolute',
@@ -15,9 +24,80 @@ const Version = () => (
       cursor: 'default',
     }}
   >
-    {`v${version}`}
+    {`v${ver}`}
   </Typography>
 );
+
+Version.propTypes = {
+  ver: PropTypes.string.isRequired,
+};
+
+const DownloadDialog = () => {
+  const [open, setOpen] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
+  const [available, setAvailable] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleRestart = () => {
+    ipcRenderer.send('restart_app');
+    handleClose();
+  };
+
+  useEffect(() => {
+    ipcRenderer.on('update_available', () => {
+      setAvailable(true);
+      setOpen(true);
+    });
+    ipcRenderer.on('update_downloaded', () => {
+      setAvailable(false);
+      setDownloaded(true);
+    });
+    return () => {
+      ipcRenderer.removeAllListeners(['update_available', 'update_downloaded']);
+    };
+  }, []);
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      {available ? <LinearProgress /> : null}
+      <DialogTitle id="responsive-dialog-title">
+        Actualización de aplicación...
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          {available
+            ? 'Hay disponible una nueva versión de la aplicación, empezando descarga.'
+            : null}
+          {downloaded
+            ? 'La descarga se ha completado. Para utilizar debe reiniciar la aplicación.'
+            : null}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          Cerrar
+        </Button>
+        {downloaded ? (
+          <Button onClick={handleRestart} color="primary" autoFocus>
+            Reiniciar
+          </Button>
+        ) : null}
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 type Props = {
   children: ReactNode;
@@ -65,7 +145,8 @@ export default function App(props: Props) {
   return (
     <ThemeProvider theme={theme}>
       {children}
-      <Version />
+      <Version ver={version} />
+      <DownloadDialog />
     </ThemeProvider>
   );
 }

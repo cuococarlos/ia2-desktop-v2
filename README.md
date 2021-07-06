@@ -218,6 +218,15 @@ yarn package --windows
 - `--ia32`
 - `--x64`
 
+### Desplegar versión compilada a Github
+
+> Genera build para windows y linux de 64 bits y publica como versión con los archivos compilados (appImage y exe) al repo de github automáticamente.
+
+`GH_TOKEN="token_de_github" yarn package-deploy`
+
+- Esto crea en el proyecto dee github.com una `draft version`, luego para hacer el release hay que editar y cambiarlo a `release version`. [Ver](https://docs.github.com/en/github/administering-a-repository/releasing-projects-on-github/managing-releases-in-a-repository#editing-a-release)
+- Para conseguir el GH_TOKEN hay que crear un `Personal access token`. [Ver](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+
 ## Licencia
 
 [**GNU General Public License version 3**](LICENSE)
