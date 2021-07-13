@@ -223,9 +223,7 @@ export default function LogIn() {
               />
             }
             label={
-              <Typography className={classes.inputLabel}>
-                Remember me
-              </Typography>
+              <Typography className={classes.inputLabel}>Recordarme</Typography>
             }
           />
           <Button
