@@ -119,7 +119,13 @@ API_URL=/api
 >    25 | #include <vips/vips8>
 > ```
 >
-> Solución: instalar libvips via `apt install libvips-dev`.
+> Solución: instalar libvips vía `apt install libvips-dev`.
+
+> #### No se encuentra la librería `libsecret`
+>
+> Para compilar una dependencia nativa de electron en linux es posible que tengamos que instalar libsecret.
+>
+> Solución: instalar vía `apt install libsecret-1-dev`.
 
 ### Iniciar el servidor de desarrollo
 

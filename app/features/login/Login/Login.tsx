@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { makeStyles } from '@material-ui/core/styles';
@@ -10,8 +10,11 @@ import {
   Grow,
   IconButton,
   InputAdornment,
+  FormControlLabel,
+  Checkbox,
 } from '@material-ui/core';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
+import keytar from 'keytar';
 import { useAuthData, useLogin } from '../authHook';
 import useNotification from '../../notifications/Notification';
 import logoImage from '../../../assets/img/logo.png';
@@ -80,16 +83,19 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function LogIn() {
+  const keyService = 'IA2';
   const history = useHistory();
   const authState = useAuthData();
   const classes = useStyles();
 
   const [login] = useLogin();
   const [Notification, notifyError] = useNotification();
+
   const [formState, setFormState] = useState({
     email: '',
     password: '',
     showPassword: false,
+    remember: false,
   });
 
   function handleFormStateChange(event) {
@@ -100,6 +106,28 @@ export default function LogIn() {
     });
   }
 
+  useEffect(() => {
+    keytar
+      .findCredentials(keyService)
+      .then((creds) => {
+        const { account, password } = creds[0];
+        if (account && password) {
+          setFormState({
+            email: account,
+            password,
+            showPassword: false,
+            remember: true,
+          });
+        }
+        return true;
+      })
+      .catch((err) => false);
+  }, []);
+
+  const handleClickRemember = () => {
+    setFormState({ ...formState, remember: !formState.remember });
+  };
+
   const handleClickShowPassword = () => {
     setFormState({ ...formState, showPassword: !formState.showPassword });
   };
@@ -108,6 +136,11 @@ export default function LogIn() {
     e.preventDefault();
     login(formState.email, formState.password)
       .then((data) => {
+        if (formState.remember) {
+          keytar.setPassword(keyService, formState.email, formState.password);
+        } else {
+          keytar.deletePassword(keyService, formState.email);
+        }
         history.push(routes.ANONIMIZATION);
         return data;
       })
@@ -141,7 +174,7 @@ export default function LogIn() {
             autoComplete="email"
             autoFocus
             onChange={handleFormStateChange}
-            InputProps={{ disableUnderline: true }}
+            InputProps={{ disableUnderline: true, value: formState.email }}
           />
           <Typography
             component="h6"
@@ -162,6 +195,7 @@ export default function LogIn() {
             onChange={handleFormStateChange}
             InputProps={{
               disableUnderline: true,
+              value: formState.password,
               type: formState.showPassword ? 'text' : 'password',
               endAdornment: (
                 <InputAdornment position="end">
@@ -178,6 +212,19 @@ export default function LogIn() {
                 </InputAdornment>
               ),
             }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formState.remember}
+                onChange={handleClickRemember}
+                name="remember"
+                color="primary"
+              />
+            }
+            label={
+              <Typography className={classes.inputLabel}>Recordarme</Typography>
+            }
           />
           <Button
             disabled={!formState.email || !formState.password}

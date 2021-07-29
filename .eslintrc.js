@@ -11,6 +11,7 @@ module.exports = {
         custom: 'ignore',
       },
     ],
+    'react/jsx-wrap-multilines': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,
